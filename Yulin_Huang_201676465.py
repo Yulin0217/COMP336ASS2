@@ -1,4 +1,6 @@
 import pandas as pd
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
 
 # Task 1
 # Set the file path
@@ -103,8 +105,8 @@ task_5_filtered_df = df[(df['Name'].isin(remaining_stocks)) & (df['date'].isin(t
 task_5_df = task_5_filtered_df.pivot(index='date', columns='Name', values='close')
 
 # Display results
-# print("Task5:")
-# print(task_5_df)
+print("Task5:")
+print(task_5_df)
 
 # Task 6
 # Used resource from: https://www.codingfinance.com/post/2018-04-03-calc-returns-py/
@@ -118,5 +120,20 @@ returns_df = task_5_df.pct_change()
 returns_df = returns_df.drop(returns_df.index[0])
 
 # Display results
-# print("Task6:")
-# print(returns_df)
+print("\nTask6:")
+print(returns_df)
+
+# Task 7
+# Used resource from: https://stackoverflow.com/questions/49520474/computing-first-principal-component-of-sklearns-pca
+# Initialize a PCA model
+pca = PCA()
+# Fit PCA model with returns
+pca.fit(returns_df)
+# Get top five principal components
+top_five_components = pca.components_[:5]
+
+# Display results
+# print("\nTask7:")
+# print("Top five components: \n", top_five_components)
+
+# Task 8
