@@ -11,7 +11,7 @@ df = pd.read_csv(file_path)
 after_remove = df[['date', 'close', 'Name']]
 # Display results
 # print("Task1:")
-# print("First five rows:", after_remove.head())
+# print("First five rows:\n", after_remove.head())
 
 # Task 2
 # Get set of stocks names then sort
@@ -33,19 +33,21 @@ last_5_names = stock_names[-5:]
 # Task 3
 # Used resource from: https://stackoverflow.com/questions/29370057/select-dataframe-rows-between-two-dates
 #                     https://stackoverflow.com/questions/50459602/how-to-select-dataframe-rows-between-two-datetimes
-# Convert 'date' column to datetime format
+# Convert 'date' column (String) to datetime64[ns] format, because it will be necessary to compare if choose to use Timestamp
 df['date'] = pd.to_datetime(df['date'])
 
 # Set the start and end timestamp prepare for filter
 start_date = pd.Timestamp('2014-07-01')
 end_date = pd.Timestamp('2017-06-30')
 # Used resource from: https://pandas.pydata.org/pandas-docs/version/0.22/generated/pandas.core.groupby.DataFrameGroupBy.agg.html
-
+#                     https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.index.html
 # Group by stock name and use aggregations to find the first and last date for each stock
 grouped_date = df.groupby('Name')['date'].agg(['min', 'max'])
 
 # Get stocks that need to be removed
-stocks_to_remove = grouped_date[(grouped_date['min'] > start_date) | (grouped_date['max'] < end_date)].index
+# The boolean mask could help to select the stocks we need
+bool_mask = (grouped_date['min'] > start_date) | (grouped_date['max'] < end_date)
+stocks_to_remove = grouped_date[bool_mask].index
 # Change index to list to prepare for better a look when print
 removed_stock = stocks_to_remove.tolist()
 
@@ -65,23 +67,23 @@ how_many_left = len(remaining_stocks)
 # print("Removed stocks:", removed_stock)
 # print("Left stocks:", how_many_left)
 
-
 # Task 4
 # Get the number of stocks of each day
-date_counts = after_remove.groupby('date').count()
+stocks_counts_of_each_day = after_remove.groupby('date').size()
+# print(stocks_counts_of_each_day)
 
-# Used resource from: https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.index.html
-#                     https://datascience.stackexchange.com/questions/58546/valueerror-the-truth-value-of-a-dataframe-is-ambiguous-use-a-empty-a-bool
+# Used resource from: https://datascience.stackexchange.com/questions/58546/valueerror-the-truth-value-of-a-dataframe-is-ambiguous-use-a-empty-a-bool
 #                     https://pandas.pydata.org/docs/reference/api/pandas.Series.html
 #                     https://sparkbyexamples.com/pandas/pandas-select-dataframe-rows-between-two-dates/
+#                     https://stackoverflow.com/questions/38376938/sort-a-pandas-dataframe-based-on-datetime-field
 # The day that have the same number of stocks as the nuber of remaining stocks is the day we want, then sort
-common_dates = date_counts[date_counts == how_many_left].index.sort_values()
+common_dates = stocks_counts_of_each_day[stocks_counts_of_each_day == how_many_left].index.sort_values()
 
 # Get the series for common_dates
 common_dates_series = pd.Series(common_dates)
-
 # Remove dates before 1st July 2014 or after 30th June 2017
-task_4_filtered_dates = common_dates_series[(common_dates_series >= start_date) & (common_dates_series <= end_date)]
+bool_mask_task4 = (common_dates_series >= start_date) & (common_dates_series <= end_date)
+task_4_filtered_dates = common_dates_series[bool_mask_task4]
 
 # Count number of dates left
 numbers_of_dates_left = len(task_4_filtered_dates)
@@ -97,7 +99,9 @@ last_5_dates = task_4_filtered_dates.tail(5)
 # print("\nLast five dates: \n", last_5_dates)
 
 # Task 5
-# Filter out a df that include remaining stocks and the dates that filtered in task 4
+# Filter out stocks that met two conditions:
+# 1.remaining stocks in task 3,
+# 2. the stocks with date that has been filtered in task 4
 task_5_filtered_df = df[(df['Name'].isin(remaining_stocks)) & (df['date'].isin(task_4_filtered_dates))]
 
 # Use pivot to creat a df that use date as index (each row is a different date), column as each stocks' close price
@@ -105,8 +109,8 @@ task_5_filtered_df = df[(df['Name'].isin(remaining_stocks)) & (df['date'].isin(t
 task_5_df = task_5_filtered_df.pivot(index='date', columns='Name', values='close')
 
 # Display results
-print("Task5:")
-print(task_5_df)
+# print("Task5:")
+# print(task_5_df)
 
 # Task 6
 # Used resource from: https://www.codingfinance.com/post/2018-04-03-calc-returns-py/
