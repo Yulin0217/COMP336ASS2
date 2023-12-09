@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
+from sklearn.preprocessing import StandardScaler
 
 # Task 1
 # Set the file path
@@ -119,7 +120,7 @@ print(task_5_df)
 #                     https://stackoverflow.com/questions/63747960/what-is-the-best-way-to-calculate-the-return-in-a-pandas-dataframe
 #                     https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.pct_change.html#pandas.DataFrame.pct_change
 
-# Computes the fractional change from the immediately previous row use pct_change()
+# Compute the fractional change from the immediately previous row use pct_change() directly, instead of customize formular, which is much slower
 returns_df = task_5_df.pct_change()
 # Drop first row which is empty
 returns_df = returns_df.drop(returns_df.index[0])
@@ -128,32 +129,32 @@ returns_df = returns_df.drop(returns_df.index[0])
 print("\nTask6:")
 print(returns_df)
 
+
 # Task 7
 # Use function to get easier for task 9
 # Define a global variable to store PCA instance
-global_pca = PCA()
-
 
 def task_7(returns):
     # Used resource from: https://stackoverflow.com/questions/49520474/computing-first-principal-component-of-sklearns-pca
-    # Modify the global pca instance
-    global global_pca
+
+    pca_f = PCA()
     # Fit PCA model with returns
-    global_pca.fit(returns_df)
+    pca_f.fit(returns)
     # Get top five principal components
-    top_five_components = global_pca.components_[:5]
-    return top_five_components
+    top_five_components = pca_f.components_[:5]
+    return pca_f, top_five_components
 
 
 # Display results
-top_five = task_7(returns_df)
+
+pca_task_7, top_five = task_7(returns_df)
 print("\nTask7:")
-print("Top five principal components: \n", task_7(top_five))
+print("Top five principal components: \n", top_five)
 
 
 # Task 8
 # Use function to get easier for task 9
-def task_8(title):
+def task_8(title, pca):
     # Used resource from: https://stackoverflow.com/questions/57293716/sklearn-pca-explained-variance-and-explained-variance-ratio-difference
     #                     https://www.baeldung.com/cs/pca
     #                     https://mikulskibartosz.name/pca-how-to-choose-the-number-of-components
@@ -164,10 +165,10 @@ def task_8(title):
     #                     https://matplotlib.org/stable/gallery/text_labels_and_annotations/legend_demo.html#sphx-glr-gallery-text-labels-and-annotations-legend-demo-py
 
     # Get explained variance ratios
-    explained_variance_ratios = global_pca.explained_variance_ratio_
+    explained_variance_ratios = pca.explained_variance_ratio_
 
     # Calculate the percentage of variance explained by the first principal component
-    first_variance = explained_variance_ratios[0] * 100
+    first_variance_f = explained_variance_ratios[0] * 100
 
     # Plot the first 20 explained variance ratios
     plt.plot(range(1, 21), explained_variance_ratios[:20], marker='o')
@@ -185,16 +186,16 @@ def task_8(title):
 
     # Used resource from: https://www.baeldung.com/cs/pca
     #                     https://mikulskibartosz.name/pca-how-to-choose-the-number-of-components
-    cumsum = np.cumsum(global_pca.explained_variance_ratio_)
+    cumsum = np.cumsum(pca.explained_variance_ratio_)
     # Calculate first 5 principal components explain what percentage of variance
-    variance_explained_first_five = cumsum[4] * 100
-    return first_variance, cumsum, variance_explained_first_five
+    variance_explained_first_five_f = cumsum[4] * 100
+    return first_variance_f, cumsum, variance_explained_first_five_f
 
 
 # Display results
 print("\nTask8:")
 first_variance, cum_variance, variance_explained_first_five = task_8(
-    'Task 8: Explained Variance Ratios (20 Principal Components)')
+    'Task 8: Explained Variance Ratios (20 Principal Components)', pca_task_7)
 print('Percentage of variance explained by the first principal components is: ', first_variance, '%')
 print('First 5 principal components explain ', variance_explained_first_five, '% of the variance.')
 
@@ -207,20 +208,21 @@ def task_9(cumsum, title):
     #                     https://mikulskibartosz.name/pca-how-to-choose-the-number-of-components
 
     # Calculate how many principal components explain 95% of the variance
-    number_of_components = np.argmax(cumsum >= 0.95) + 1
+    number_of_components_f = np.argmax(cumsum >= 0.95) + 1
     # print(number_of_components)
     # Plot cumulative variance
     plt.plot(cumsum, marker='o')
     plt.title(title)
-    plt.xlabel('Principal Component (Index)')
+    plt.xlabel('Number Of Principal Component')
     plt.ylabel('Cumulative Variance Ratio')
 
     #  Mark on plot the principal component for which the cumulative variance ratio is greater than or equal to 95%.
-    plt.axvline(x=number_of_components, color='green', linestyle='-', label='95% Variance on 226 principal components')
+    plt.axvline(x=number_of_components_f, color='green', linestyle='-',
+                label='95% Variance on {} principal components'.format(number_of_components_f))
     plt.axhline(y=0.95, color='red', linestyle='-', label='95% Cumulative Variance Ratios')
     plt.legend()
     plt.show()
-    return number_of_components
+    return number_of_components_f
 
 
 # Display results
@@ -228,4 +230,37 @@ print("\nTask9:")
 number_of_components = task_9(cum_variance, 'Task 9: Cumulative Variance Ratios by Principal Component')
 print('How many principal components explain 95% of the variance: ', number_of_components)
 
+
 # Task 10
+def task_10(returns):
+    # Used resource from: https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html
+    #                     https://stackoverflow.com/questions/35723472/how-to-use-sklearn-fit-transform-with-pandas-and-return-dataframe-instead-of-num
+    # Create StandardScaler Instance
+    scaler = StandardScaler()
+    #
+    normalized = pd.DataFrame(scaler.fit_transform(returns), columns=returns.columns)
+
+    return normalized
+
+
+# Display results
+print("\nTask10:")
+normalized_returns = task_10(returns_df)
+
+# Task 7 normalized
+print('Task 7 normalized: ')
+pca_task_10, top_five_task_10 = task_7(normalized_returns)
+print("Top five principal components (Normalized Data): \n", top_five_task_10)
+
+# Task 8 normalized
+print('\nTask 8 normalized: ')
+first_variance_task_10, cum_variance_task_10, variance_explained_first_five_task_10 = task_8(
+    'Task 10: Explained Variance Ratios (20 Principal Components)', pca_task_10)
+print('Percentage of variance explained by the first principal components is (Normalized Data): ', first_variance, '%')
+print('First 5 principal components explain ', variance_explained_first_five, '% of the variance. (Normalized Data)')
+
+# Task 9 normalized
+print('\nTask 9 normalized: ')
+number_of_components = task_9(cum_variance_task_10,
+                              'Task 10: Cumulative Variance Ratios by Number of Principal Component')
+print('How many principal components explain 95% of the variance (Normalized Data): ', number_of_components)
