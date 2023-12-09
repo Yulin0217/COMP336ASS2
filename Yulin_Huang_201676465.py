@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
@@ -124,12 +125,12 @@ returns_df = task_5_df.pct_change()
 returns_df = returns_df.drop(returns_df.index[0])
 
 # Display results
-print("\nTask6:")
-print(returns_df)
+# print("\nTask6:")
+# print(returns_df)
 
 # Task 7
 # Used resource from: https://stackoverflow.com/questions/49520474/computing-first-principal-component-of-sklearns-pca
-# Initialize a PCA model
+# Initialize a PCA instance
 pca = PCA()
 # Fit PCA model with returns
 pca.fit(returns_df)
@@ -138,6 +139,48 @@ top_five_components = pca.components_[:5]
 
 # Display results
 # print("\nTask7:")
-# print("Top five components: \n", top_five_components)
+# print("Top five principal components: \n", top_five_components)
 
 # Task 8
+# Used resource from: https://stackoverflow.com/questions/57293716/sklearn-pca-explained-variance-and-explained-variance-ratio-difference
+#                     https://www.baeldung.com/cs/pca
+#                     https://mikulskibartosz.name/pca-how-to-choose-the-number-of-components
+#                     https://stackoverflow.com/questions/55678708/interpretation-of-pca-explained-variance-ratio
+#                     https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html
+#                     https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.axvline.html#matplotlib.pyplot.axvline
+#                     https://matplotlib.org/stable/api/_as_gen/matplotlib.lines.Line2D.html#matplotlib.lines.Line2D.set_marker
+#                     https://matplotlib.org/stable/gallery/text_labels_and_annotations/legend_demo.html#sphx-glr-gallery-text-labels-and-annotations-legend-demo-py
+
+# Get explained variance ratios
+explained_variance_ratios = pca.explained_variance_ratio_
+
+# Calculate the percentage of variance explained by the first principal component
+first_variance = explained_variance_ratios[0] * 100
+
+# Plot the first 20 explained variance ratios
+plt.plot(range(1, 21), explained_variance_ratios[:20], marker='o')
+plt.title('Explained Variance Ratios (20 Principal Components)')
+plt.xlabel('Principal Component')
+plt.ylabel('Explained Variance Ratio')
+
+# By direct observation, before this point each new principal component significantly increases its explanation of the total variance.
+# After this point each new principal component gradually decreases its contribution to the variance.
+# So set the elbow point as 5 principal components
+elbow_point = 5
+plt.axvline(x=elbow_point, color='green', ls='-', label='Elbow Point')
+plt.legend()
+plt.show()
+
+# Calculate how many principal components explain 90% of the variance
+# Used resource from: https://www.baeldung.com/cs/pca
+#                     https://mikulskibartosz.name/pca-how-to-choose-the-number-of-components
+cumsum = np.cumsum(pca.explained_variance_ratio_)
+number_of_components = np.argmax(cumsum >= 0.90) + 1
+# Calculate first 5 principal components explain what percentage of variance
+variance_explained_first_five = cumsum[4] * 100
+
+# Display results
+print("\nTask8:")
+print('Percentage of variance explained by the first principal components is: ', first_variance)
+print('How many principal components explain 90% of the variance', number_of_components)
+print('First 5 principal components explain ', variance_explained_first_five, '% of the variance.')
