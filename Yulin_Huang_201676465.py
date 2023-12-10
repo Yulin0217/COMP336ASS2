@@ -176,7 +176,7 @@ def task_8(title, pca):
     plt.xlabel('Principal Component')
     plt.ylabel('Explained Variance Ratio')
 
-    # By direct observation, before this point each new principal component significantly increases its explanation of the total variance.
+    # By direct observation, before this point (5 principal component) each new principal component significantly increases its explanation of the total variance.
     # After this point each new principal component gradually decreases its contribution to the variance.
     # So set the elbow point as 5 principal components
     elbow_point = 5
@@ -186,6 +186,7 @@ def task_8(title, pca):
 
     # Used resource from: https://www.baeldung.com/cs/pca
     #                     https://mikulskibartosz.name/pca-how-to-choose-the-number-of-components
+    # Calculate Cumulative Variance Ratios
     cumsum = np.cumsum(pca.explained_variance_ratio_)
     # Calculate first 5 principal components explain what percentage of variance
     variance_explained_first_five_f = cumsum[4] * 100
@@ -196,6 +197,7 @@ def task_8(title, pca):
 print("\nTask8:")
 first_variance, cum_variance, variance_explained_first_five = task_8(
     'Task 8: Explained Variance Ratios (20 Principal Components)', pca_task_7)
+
 print('Percentage of variance explained by the first principal components is: ', first_variance, '%')
 print('First 5 principal components explain ', variance_explained_first_five, '% of the variance.')
 
@@ -228,6 +230,7 @@ def task_9(cumsum, title):
 # Display results
 print("\nTask9:")
 number_of_components = task_9(cum_variance, 'Task 9: Cumulative Variance Ratios by Principal Component')
+
 print('How many principal components explain 95% of the variance: ', number_of_components)
 
 
@@ -237,7 +240,7 @@ def task_10(returns):
     #                     https://stackoverflow.com/questions/35723472/how-to-use-sklearn-fit-transform-with-pandas-and-return-dataframe-instead-of-num
     # Create StandardScaler Instance
     scaler = StandardScaler()
-    #
+    # Fit the transform instance and convert to dataframe format
     normalized = pd.DataFrame(scaler.fit_transform(returns), columns=returns.columns)
 
     return normalized
